@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: fullstack_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: fullstack_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - fullstack_network
+
+  # Backend Server
+  server:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: fullstack_server
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=5000
+      - DATABASE_URL=postgresql://postgres:password@postgres:5432/fullstack_db?schema=public
+      - FRONTEND_URL=http://localhost:3000
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres
+    networks:
+      - fullstack_network
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+
+  # Frontend Client
+  client:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: fullstack_client
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://localhost:5000/api
+    networks:
+      - fullstack_network
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+volumes:
+  postgres_data:
+
+networks:
+  fullstack_network:
+    driver: bridge

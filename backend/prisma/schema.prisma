@@ -1,0 +1,268 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model City {
+  id        Int      @id @default(autoincrement())
+  name      String
+  state     String?
+  stateCode String?  // e.g., "KA", "MH"
+  country   String
+  cityCode  String   @unique // e.g., "KA01", "MH02"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  libraries Library[]
+  
+  @@map("cities")
+}
+
+model Library {
+  id        Int      @id @default(autoincrement())
+  name      String
+  address   String?
+  cityId    Int
+  libraryCode String @unique // e.g., "KA01A", "MH02B"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  city       City       @relation(fields: [cityId], references: [id], onDelete: Cascade)
+  librarians User[]     @relation("LibraryLibrarians")
+  bookCopies BookCopy[]
+  homeLibraryMembers User[] @relation("MemberHomeLibrary")
+  bookRequests BookRequest[]
+  loanTransactions LoanTransaction[]
+  
+  @@map("libraries")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  name      String
+  password  String
+  role      String   @default("MEMBER") // ADMIN, LIBRARIAN, MEMBER
+  phone     String?  // Phone number
+  address   String?  // Address
+  libraryId Int?     // For librarian assignments
+  homeLibraryId Int? // Member's preferred library
+  notificationPreferences String @default("{\"email\": true, \"in_app\": true}")
+  maxReissues Int @default(2)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  loans     Loan[]
+  library   Library? @relation("LibraryLibrarians", fields: [libraryId], references: [id])
+  homeLibrary Library? @relation("MemberHomeLibrary", fields: [homeLibraryId], references: [id])
+  bookRequests BookRequest[] @relation("MemberRequests")
+  processedRequests BookRequest[] @relation("ProcessedRequests")
+  issueTokens IssueToken[] @relation("MemberTokens")
+  verifiedTokens IssueToken[] @relation("VerifiedTokens")
+  loanTransactions LoanTransaction[] @relation("MemberTransactions")
+  processedTransactions LoanTransaction[] @relation("ProcessedTransactions")
+  notifications NotificationLog[] @relation("UserNotifications")
+  reservedBooks BookCopy[] @relation("ReservedBooks")
+  verifiedPickups Loan[] @relation("VerifiedPickups")
+  
+  @@map("users")
+}
+
+model Book {
+  id          Int      @id @default(autoincrement())
+  title       String
+  author      String
+  description String?
+  isbn        String   @unique // Now required - format: LibraryCode + 4-digit book number
+  imageUrl    String?
+  totalCopies Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Relations
+  copies      BookCopy[]
+
+  @@map("books")
+}
+
+model BookCopy {
+  id        Int      @id @default(autoincrement())
+  copyId    String   @unique // Unique identifier for each physical copy
+  bookId    Int
+  libraryId Int
+  status    String   @default("AVAILABLE") // AVAILABLE, RESERVED, LOANED, MAINTENANCE, LOST
+  reservedUntil DateTime?
+  reservedBy Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  book      Book     @relation(fields: [bookId], references: [id])
+  library   Library  @relation(fields: [libraryId], references: [id])
+  loans     Loan[]
+  reservedByUser User? @relation("ReservedBooks", fields: [reservedBy], references: [id])
+  bookRequests BookRequest[]
+  issueTokens IssueToken[]
+  loanTransactions LoanTransaction[]
+
+  @@map("book_copies")
+}
+
+model Loan {
+  id           Int       @id @default(autoincrement())
+  userId       Int
+  bookCopyId   Int
+  borrowedAt   DateTime  @default(now())
+  dueDate      DateTime
+  returnedAt   DateTime?
+  status       String    @default("ACTIVE") // ACTIVE, RETURNED, OVERDUE
+  issueTokenId Int?
+  reissueCount Int @default(0)
+  fineAmount   Float @default(0)
+  pickupVerifiedAt DateTime?
+  pickupVerifiedBy Int?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  
+  // Relations
+  user         User      @relation(fields: [userId], references: [id])
+  bookCopy     BookCopy  @relation(fields: [bookCopyId], references: [id])
+  issueToken   IssueToken? @relation(fields: [issueTokenId], references: [id])
+  pickupVerifiedByUser User? @relation("VerifiedPickups", fields: [pickupVerifiedBy], references: [id])
+  transactions LoanTransaction[]
+  reminderSchedules ReminderSchedule[]
+  notificationLogs NotificationLog[]
+
+  @@map("loans")
+}
+
+model BookRequest {
+  id            Int      @id @default(autoincrement())
+  memberId      Int
+  bookCopyId    Int
+  libraryId     Int
+  status        String   @default("PENDING") // PENDING, APPROVED, REJECTED, EXPIRED
+  requestDate   DateTime @default(now())
+  processedDate DateTime?
+  processedBy   Int?
+  rejectionNote String?
+  pickupDeadline DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  member        User     @relation("MemberRequests", fields: [memberId], references: [id])
+  bookCopy      BookCopy @relation(fields: [bookCopyId], references: [id])
+  library       Library  @relation(fields: [libraryId], references: [id])
+  processedByUser User?  @relation("ProcessedRequests", fields: [processedBy], references: [id])
+  issueToken    IssueToken?
+  notificationLogs NotificationLog[]
+  
+  @@map("book_requests")
+}
+
+model IssueToken {
+  id              Int      @id @default(autoincrement())
+  requestId       Int      @unique
+  qrCode          String   @unique
+  alphanumericCode String  @unique
+  memberId        Int
+  bookCopyId      Int
+  issueDate       DateTime
+  dueDate         DateTime
+  status          String   @default("GENERATED") // GENERATED, VERIFIED, ISSUED, EXPIRED
+  verifiedAt      DateTime?
+  verifiedBy      Int?
+  createdAt       DateTime @default(now())
+  
+  // Relations
+  request         BookRequest @relation(fields: [requestId], references: [id])
+  member          User        @relation("MemberTokens", fields: [memberId], references: [id])
+  bookCopy        BookCopy    @relation(fields: [bookCopyId], references: [id])
+  verifiedByUser  User?       @relation("VerifiedTokens", fields: [verifiedBy], references: [id])
+  loans           Loan[]
+  
+  @@map("issue_tokens")
+}
+
+model LoanTransaction {
+  id              Int      @id @default(autoincrement())
+  loanId          Int?
+  transactionType String   // ISSUE, RETURN, REISSUE, FINE_PAYMENT
+  memberId        Int
+  bookCopyId      Int
+  libraryId       Int
+  processedBy     Int?
+  transactionDate DateTime @default(now())
+  dueDate         DateTime?
+  fineAmount      Float    @default(0)
+  notes           String?
+  createdAt       DateTime @default(now())
+  
+  // Relations
+  loan            Loan?    @relation(fields: [loanId], references: [id])
+  member          User     @relation("MemberTransactions", fields: [memberId], references: [id])
+  bookCopy        BookCopy @relation(fields: [bookCopyId], references: [id])
+  library         Library  @relation(fields: [libraryId], references: [id])
+  processedByUser User?    @relation("ProcessedTransactions", fields: [processedBy], references: [id])
+  
+  @@map("loan_transactions")
+}
+
+model NotificationLog {
+  id               Int      @id @default(autoincrement())
+  userId           Int
+  notificationType String   // REQUEST_APPROVED, REQUEST_REJECTED, DUE_REMINDER, OVERDUE_NOTICE
+  deliveryMethod   String   // EMAIL, IN_APP, SMS
+  subject          String?
+  message          String
+  sentAt           DateTime @default(now())
+  deliveryStatus   String   @default("SENT") // SENT, FAILED, RETRY
+  relatedLoanId    Int?
+  relatedRequestId Int?
+  
+  // Relations
+  user             User         @relation("UserNotifications", fields: [userId], references: [id])
+  relatedLoan      Loan?        @relation(fields: [relatedLoanId], references: [id])
+  relatedRequest   BookRequest? @relation(fields: [relatedRequestId], references: [id])
+  
+  @@map("notification_logs")
+}
+
+model ReminderSchedule {
+  id            Int      @id @default(autoincrement())
+  loanId        Int
+  reminderType  String   // DUE_REMINDER, OVERDUE_NOTICE
+  scheduledDate DateTime
+  sentAt        DateTime?
+  status        String   @default("SCHEDULED") // SCHEDULED, SENT, FAILED
+  createdAt     DateTime @default(now())
+  
+  // Relations
+  loan          Loan     @relation(fields: [loanId], references: [id])
+  
+  @@map("reminder_schedules")
+}
+
+// Note: Using String instead of enums for SQLite compatibility
+// UserRole: ADMIN, LIBRARIAN, MEMBER
+// CopyStatus: AVAILABLE, RESERVED, LOANED, MAINTENANCE, LOST  
+// LoanStatus: ACTIVE, RETURNED, OVERDUE
+// RequestStatus: PENDING, APPROVED, REJECTED, EXPIRED
+// TokenStatus: GENERATED, VERIFIED, ISSUED, EXPIRED
+// TransactionType: ISSUE, RETURN, REISSUE, FINE_PAYMENT
+// NotificationType: REQUEST_APPROVED, REQUEST_REJECTED, DUE_REMINDER, OVERDUE_NOTICE
+// DeliveryMethod: EMAIL, IN_APP, SMS
+// DeliveryStatus: SENT, FAILED, RETRY
+// ReminderType: DUE_REMINDER, OVERDUE_NOTICE
+// ReminderStatus: SCHEDULED, SENT, FAILED
