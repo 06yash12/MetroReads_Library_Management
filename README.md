@@ -14,7 +14,7 @@ A full-stack web app for managing libraries across multiple cities. Members brow
 - Full loan tracking, overdue detection and activity history
 - JWT auth with role guards on every route
 
-Full feature breakdown → [project_documentation.md](project_documentation.md)
+Full feature breakdown → [PROJECT_DOCUMENTATION.md](PROJECT_DOCUMENTATION.md)
 
 ---
 
@@ -22,6 +22,8 @@ Full feature breakdown → [project_documentation.md](project_documentation.md)
 
 **Home Page** — live stats, book carousel, India map, city selector. No login needed.
 ![Home Page](demo/docs/Image/Home%20Page.png)
+
+---
 
 **Member Books List** — browse your home library's books, filter by availability, request in one click.
 ![Member Books List](demo/docs/Image/Member%20Books%20List.png)
