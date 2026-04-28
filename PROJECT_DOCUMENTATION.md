@@ -7,44 +7,51 @@ MetroReads is a web app that helps manage libraries across multiple cities. It c
 ## Screenshots
 
 ### Home Page
-![Home Page](../demo/docs/Image/Home%20Page.png)
-The public landing page. Shows live system stats (cities, libraries, books, members), a searchable book carousel with cover images, an interactive India map highlighting states with active libraries, and a city selector to find nearby branches. No login required to browse.
+<img width="1920" height="2182" alt="Home Page" src="https://github.com/user-attachments/assets/a86c56ea-b70f-4bb9-a21a-e4a126efaa08" />
+
+The public landing page. Shows live system stats (cities, libraries, books, members), a searchable book carousel with cover images, an interactive India map highlighting states with active libraries and a city selector to find nearby branches. No login required to browse.
 
 ---
 
 ### Member Books List
-![Member Books List](../demo/docs/Image/Member%20Books%20List.png)
+<img width="1910" height="1564" alt="Member Books List" src="https://github.com/user-attachments/assets/3ac5a7d7-7855-4a83-b05c-9142864cda0b" />
+
 The book browsing view for logged-in members. Displays all books available at the member's home library with cover images, author and copy count. Members can filter by availability (all / available only / high stock / low stock) and sort by title, author or number of copies. A single click sends a borrow request.
 
 ---
 
 ### Book Request Approved
-![Book Request Approved](../demo/docs/Image/Book%20Request%20Approved.png)
+<img width="1911" height="776" alt="Book Request Approved" src="https://github.com/user-attachments/assets/a8a39500-6894-4301-8f05-c919d18de1a6" />
+
 What a member sees after their request is approved by the librarian. A unique 8-character pickup code and QR code are displayed with a 48-hour countdown timer. The member brings this code to the library to collect their book.
 
 ---
 
 ### Librarian Dashboard
-![Librarian Dashboard](../demo/docs/Image/Librarian%20Dashboard.png)
+<img width="1767" height="921" alt="Librarian Dashboard" src="https://github.com/user-attachments/assets/b0ede3dd-e698-47fd-a678-7eaf3f1da179" />
+
 The librarian's overview panel. Shows key stats for their branch — total books, active loans, available copies, books in maintenance and pending requests — plus a feed of the 5 most recent loans. Entry point to all librarian workflows via the tab navigation.
 
 ---
 
 ### Librarian Work (Requests & Approvals)
-![Librarian Work](../demo/docs/Image/Librarian%20Work.png)
+<img width="1919" height="901" alt="Librarian Work" src="https://github.com/user-attachments/assets/a94c45ce-4f8e-441e-82cf-98337fc4d370" />
+
 The requests tab where librarians review pending borrow requests. Each card shows the book cover, book details, member info (name, email, phone) and the member's borrowing history (total loans, overdue count, fines). Librarians can approve or reject with a reason directly from this view.
 
 ---
 
 ### Pickup Verify
-![Pickup Verify](../demo/docs/Image/Pickup%20Verify.png)
-The pickup verification screen. When a member arrives at the library, the librarian enters or scans the member's 8-character code here. The system validates the code, confirms the book and member details, and issues the loan — creating a loan record with a due date and marking the book copy as borrowed.
+<img width="1919" height="917" alt="Pickup Verify" src="https://github.com/user-attachments/assets/7c55d2fa-bbc0-430f-912f-3f130af1aff9" />
+
+The pickup verification screen. When a member arrives at the library, the librarian enters or scans the member's 8-character code here. The system validates the code, confirms the book and member details and issues the loan — creating a loan record with a due date and marking the book copy as borrowed.
 
 ---
 
 ### Admin Dashboard
-![Admin Dashboard](../demo/docs/Image/Admin%20Dashboard.png)
-The admin control panel. Provides a system-wide overview of all cities, libraries, books, members, and active loans. From here, admins manage the full hierarchy — creating cities and library branches, assigning librarians, and monitoring members and loans across every location.
+<img width="1315" height="910" alt="Admin Dashboard" src="https://github.com/user-attachments/assets/044551aa-f4d9-4bfb-9af0-6e72e6c6c398" />
+
+The admin control panel. Provides a system-wide overview of all cities, libraries, books, members and active loans. From here, admins manage the full hierarchy — creating cities and library branches, assigning librarians and monitoring members and loans across every location.
 
 ---
 
