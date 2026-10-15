@@ -61,17 +61,6 @@ npm run dev                # http://localhost:5173
 cd backend
 npx prisma studio          # http://localhost:5555
 ```
-
----
-
-## Default login credentials
-
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | admin@library.com | admin@library.com |
-| Librarian | librarian@library.com | librarian@library.com |
-| Member | member@library.com | member@library.com |
-
 ---
 
 ## Tech stack
